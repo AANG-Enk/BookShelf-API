@@ -1,4 +1,6 @@
 /* eslint-disable linebreak-style */
+/* eslint-disable array-callback-return */
+/* eslint-disable max-len */
 /* eslint-disable consistent-return */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-const-assign */
@@ -81,32 +83,75 @@ const getAllBook = (request, h) => {
     name, reading, finished,
   } = request.query; // Struktur Data yang akan ditampilkan
 
-  const filterBooks = books;
+  if (!name && !reading && !finished) {
+    const response = h.response({
+      status: 'success',
+      data: {
+        books: books.map((book) => ({
+          id: book.id,
+          name: book.name,
+          publisher: book.publisher,
+        })),
+      },
+    });
+    response.code(200);
+    return response;
+  }
 
-  // kondisi cek saat Ambil semua Data
-  if (name !== undefined) {
-    filterBooks = filterBooks.filter((book) => book.name.toLowerCase().include(name.toLowerCase));
-  }
-  if (reading !== undefined) {
-    filterBooks = filterBooks.filter((book) => book.reading === !!Number(reading));
-  }
-  if (finished !== undefined) {
-    filterBooks = filterBooks.filter((book) => book.finished === !!Number(finished));
+  // Menampilkan Query Name
+  if (name) {
+    const filterBooksName = books.filter((book) => {
+      book.name.toLowerCase().include(name.toLowerCase);
+    });
+    const response = h.response({
+      status: 'success',
+      data: {
+        books: filterBooksName.map((book) => ({
+          id: book.id,
+          name: book.name,
+          publisher: book.publisher,
+        })),
+      },
+    });
+    response.code(200);
+    return response;
   }
 
-  // Respon yang diterima apakah berhasil atau gagal
-  const response = h.response({
-    status: 'success',
-    data: {
-      books: filterBooks.map((book) => ({
-        id: book.id,
-        name: book.name,
-        publisher: book.publisher,
-      })),
-    },
-  });
-  response.code(200);
-  return response;
+  // Menampilkan Query Reading
+  if (reading) {
+    const filterBooksReading = books.filter((book) => Number(book.reading) === Number(reading));
+
+    const response = h.response({
+      status: 'success',
+      data: {
+        books: filterBooksReading.map((book) => ({
+          id: book.id,
+          name: book.name,
+          publisher: book.publisher,
+        })),
+      },
+    });
+    response.code(200);
+    return response;
+  }
+
+  // Menampilkan Query Finished
+  if (finished) {
+    const filterBooksFinished = books.filter((book) => Number(book.finished) === Number(finished));
+
+    const response = h.response({
+      status: 'success',
+      data: {
+        books: filterBooksFinished.map((book) => ({
+          id: book.id,
+          name: book.name,
+          publisher: book.publisher,
+        })),
+      },
+    });
+    response.code(200);
+    return response;
+  }
 };
 
 const getBookById = (request, h) => {

@@ -1,6 +1,7 @@
 /* eslint-disable linebreak-style */
 /* eslint-disable consistent-return */
 /* eslint-disable no-unused-vars */
+/* eslint-disable no-const-assign */
 const { nanoid } = require('nanoid');
 const books = require('./book');
 
@@ -77,11 +78,59 @@ const addBookHandler = (request, h) => {
 
 const getAllBookHandler = (request, h) => {
   const {
-    name, year, author, summary, publisher, pageCount, readPage, reading,
-  } = request.payload; // Struktur Data yang akan ditampilkan
+    name, reading, finished,
+  } = request.query; // Struktur Data yang akan ditampilkan
+
+  const filterBooks = books;
+
+  // kondisi cek saat Ambil semua Data
+  if (name !== undefined) {
+    filterBooks = filterBooks.filter((book) => book.name.toLowerCase().include(name.toLowerCase));
+  }
+  if (reading !== undefined) {
+    filterBooks = filterBooks.filter((book) => book.reading === !!Number(reading));
+  }
+  if (finished !== undefined) {
+    filterBooks = filterBooks.filter((book) => book.finished === !!Number(finished));
+  }
+
+  // Respon yang diterima apakah berhasil atau gagal
+  const response = h.response({
+    status: 'success',
+    data: {
+      books: filterBooks.map((book) => ({
+        id: book.id,
+        name: book.name,
+        publisher: book.publisher,
+      })),
+    },
+  });
+  response.code(200);
+  return response;
+};
+
+const getBookByIdHandler = (request, h) => {
+  const { id } = request.params;
+  const book = books.filter((bk) => bk.id === id)[0];
+
+  if (book !== undefined) {
+    return {
+      status: 'success',
+      data: {
+        book,
+      },
+    };
+  }
+  const response = h.response({
+    status: 'fail',
+    message: 'Buku tidak ditemukan',
+  });
+  response.code(404);
+  return response;
 };
 
 module.exports = {
   addBookHandler,
   getAllBookHandler,
+  getBookByIdHandler,
 };
